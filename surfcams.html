@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" id="favicon" type="image/svg+xml" href="data:,">
+<script>
+  // Favicon : planche de surf, couleurs selon le style choisi [fond, planche, bande]
+  var FAVICON_COLORS = { ocean: ["#f3f6f8", "#0b6e8f", "#ffffff"], surfclub: ["#72b3bf", "#8d2331", "#ffffff"], retro: ["#2b313c", "#f5a81c", "#e0312b"], lightav: ["#f5efe2", "#f28a1f", "#1d78c1"], psy: ["#f29a2e", "#fdf3d6", "#c8467a"] };
+  function setFavicon(skin) {
+    var c = FAVICON_COLORS[skin] || FAVICON_COLORS.retro;
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="' + c[0] + '"/>' +
+      '<g transform="rotate(38 32 32)"><path d="M32 4C41 13 44 27 42 41C40 53 36 59 32 61C28 59 24 53 22 41C20 27 23 13 32 4Z" fill="' + c[1] + '"/>' +
+      '<path d="M32 12V56" stroke="' + c[2] + '" stroke-width="3" stroke-linecap="round" fill="none"/></g></svg>';
+    document.getElementById("favicon").href = "data:image/svg+xml," + encodeURIComponent(svg);
+  }
+  var skin = "retro"; try { skin = localStorage.getItem("skin"); } catch (e) {}
+  skin = ["ocean", "surfclub", "retro", "lightav", "psy"].indexOf(skin) < 0 ? "retro" : skin;
+  document.documentElement.dataset.skin = skin;
+  setFavicon(skin);
+</script>
+<title>Hossegor - Capbreton</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Chango&family=Josefin+Sans:wght@600;700&family=Limelight&family=Modak&family=Shrikhand&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.21.5/video-js.min.css" rel="stylesheet">
+<style>
+  /* ---- Habillages : tout ce qui change d'un style à l'autre est dans ces variables ---- */
+  :root {
+    --bg: #f6f0e4; --text: #4a4033; --muted: #7a6f5f; --line: #e6dccb;
+    --meteo-bg: rgba(255,255,255,.6); --meteo-border: 0 solid transparent; --radius: 10px;
+    --th-bg: #efe6d6; --th-color: #4a4033; --th-size: .9rem; --th-ls: 0; --th-tf: none; --th-border: transparent; --th-shadow: none;
+    --hours-bg: transparent; --now-bg: #fff; --nowhead-bg: #fff; --nowhead-color: #4a4033; --nowhead-day: #7a6f5f;
+    --tide: #bcd9e6; --tide-now: #a9cfe0; --tide-now-bg: #fff; --ti: #4a7f99; --arrow: #7a6f5f;
+    --chip-bg: transparent; --chip-border: transparent; --chip-pad: 0; --chip-weight: 400; --chip-sep: "·";
+    --top-dir: column; --top-ai: center; --top-gap: 6px; --top-jc: center; --subtitle-jc: center; --subtitle-size: 1.05rem; --subtitle-color: #7a6f5f;
+    --h1-font: system-ui, sans-serif; --h1-size: 2rem; --h1-weight: 700; --h1-shadow: none; --h1-ls: 0; --h1-color: #4a4033;
+    --h2-font: system-ui, sans-serif; --h2-size: 1.1rem; --h2-weight: 700; --h2-ls: 0;
+    --cam-bg: transparent; --cam-border: 0 solid transparent; --cam-shadow: none; --cam-radius: 0; --head-pad: 8px 0 0; --stripe-h: 0px;
+    --badge-bg: #8a8173; --badge-color: #fff; --badge-border: transparent;
+    --live-bg: #1e8e3e; --live-color: #fff; --live-border: transparent; --live-dot: #fff;
+    --off-bg: #4a4033; --off-color: #fff; --off-border: transparent;
+    --frame-bg: #000; --gap: 36px 16px; --wave: none; --wave-h: 0px;
+    --sk-a: #e9dfcc; --sk-b: #f6f0e4; --sk-chip-h: 1em; --sk-chip-r: 4px;
+    --body-bg: var(--bg); --h1-fill: none; --h2-fill: none; --h2-color: inherit; --h2-stroke: 0 transparent; --stripe-bg: linear-gradient(90deg, #f5a81c, #f28c1e, #e0312b, #1c75bc, #2a7a9b);
+  }
+  [data-skin="ocean"] {
+    --bg: #f3f6f8; --text: #14283a; --muted: #5d7183; --line: #e3e9ee;
+    --meteo-bg: #fff; --meteo-border: 1px solid #e3e9ee; --radius: 14px;
+    --th-bg: #fff; --th-color: #5d7183; --th-size: .75rem; --th-ls: .04em; --th-tf: uppercase; --th-border: #e3e9ee; --th-shadow: 6px 0 8px -6px rgba(20,40,58,.12);
+    --hours-bg: #fafcfd; --now-bg: #e8f3f8; --nowhead-bg: #0b6e8f; --nowhead-color: #fff; --nowhead-day: rgba(255,255,255,.8);
+    --tide: #c4e1ee; --tide-now: #9fd0e4; --tide-now-bg: #e8f3f8; --ti: #0b6e8f; --arrow: #0b6e8f;
+    --chip-bg: #fff; --chip-border: #e3e9ee; --chip-pad: 6px 12px; --chip-weight: 500; --chip-sep: "";
+    --top-dir: row; --top-ai: baseline; --top-gap: 10px 24px; --top-jc: space-between; --subtitle-jc: flex-start; --subtitle-size: .85rem; --subtitle-color: #14283a;
+    --h1-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif; --h1-size: 3rem; --h1-weight: 700; --h1-ls: -.02em; --h1-color: #14283a;
+    --h2-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif; --h2-size: 1rem; --h2-weight: 600; --h2-ls: -.01em;
+    --cam-bg: #fff; --cam-border: 1px solid #e3e9ee; --cam-shadow: 0 1px 2px rgba(20,40,58,.06), 0 4px 16px rgba(20,40,58,.05); --cam-radius: 14px; --head-pad: 12px 16px;
+    --badge-bg: #eef2f5; --badge-color: #5d7183; --badge-border: transparent;
+    --live-bg: #dcfce7; --live-color: #15803d; --live-border: transparent; --live-dot: #16a34a;
+    --off-bg: #fde8e8; --off-color: #b42318; --off-border: transparent;
+    --frame-bg: #0b1620; --gap: 24px;
+    --sk-a: #e6edf2; --sk-b: #f4f8fa; --sk-chip-h: 32px; --sk-chip-r: 999px;
+  }
+  [data-skin="retro"] {
+    --bg: #2b313c; --text: #f7efdd; --muted: #b8b09f; --line: #4a5363;
+    --meteo-bg: #363d4a; --meteo-border: 2px solid #4a5363; --radius: 18px;
+    --th-bg: #2f3541; --th-color: #f5a81c; --th-size: .72rem; --th-ls: .08em; --th-tf: uppercase; --th-border: #4a5363; --th-shadow: 6px 0 10px -6px rgba(0,0,0,.5);
+    --hours-bg: #3d4553; --now-bg: rgba(245,168,28,.16); --nowhead-bg: #f28c1e; --nowhead-color: #2b1a05; --nowhead-day: rgba(43,26,5,.75);
+    --tide: rgba(28,117,188,.75); --tide-now: #1c75bc; --tide-now-bg: rgba(245,168,28,.16); --ti: #f5a81c; --arrow: #f5a81c;
+    --chip-bg: #363d4a; --chip-border: #f5a81c; --chip-pad: 7px 14px; --chip-weight: 700; --chip-sep: "";
+    --top-dir: row; --top-ai: center; --top-gap: 14px 28px; --top-jc: space-between; --subtitle-jc: flex-start; --subtitle-size: .85rem; --subtitle-color: #f7efdd;
+    --h1-font: Shrikhand, "DM Sans", serif; --h1-size: clamp(2.4rem, 5.2vw, 3.8rem); --h1-weight: 400; --h1-ls: 0; --h1-color: #f7efdd;
+    --h1-shadow: 2px 2px 0 #f5a81c, 4px 4px 0 #f28c1e, 6px 6px 0 #e0312b, 8px 8px 0 #1c75bc;
+    --h2-font: Shrikhand, "DM Sans", serif; --h2-size: 1.25rem; --h2-weight: 400; --h2-ls: 0;
+    --cam-bg: #363d4a; --cam-border: 2px solid #4a5363; --cam-shadow: 0 10px 28px rgba(0,0,0,.28); --cam-radius: 18px; --head-pad: 12px 16px; --stripe-h: 10px;
+    --badge-bg: #3d4553; --badge-color: #b8b09f; --badge-border: #4a5363;
+    --live-bg: rgba(74,222,128,.14); --live-color: #4ade80; --live-border: #4ade80; --live-dot: #4ade80;
+    --off-bg: #3d4553; --off-color: #b8b09f; --off-border: #e0312b;
+    --frame-bg: #11151b; --gap: 28px;
+    --wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='56' viewBox='0 0 120 56'%3E%3Cg fill='none' stroke-width='5' stroke-linecap='round'%3E%3Cpath d='M0 10Q30 -2 60 10T120 10' stroke='%23f5a81c'/%3E%3Cpath d='M0 19Q30 7 60 19T120 19' stroke='%23f28c1e'/%3E%3Cpath d='M0 28Q30 16 60 28T120 28' stroke='%23e0312b'/%3E%3Cpath d='M0 37Q30 25 60 37T120 37' stroke='%231c75bc'/%3E%3Cpath d='M0 46Q30 34 60 46T120 46' stroke='%232a7a9b'/%3E%3C/g%3E%3C/svg%3E"); --wave-h: 56px;
+    --sk-a: #434b5a; --sk-b: #505a6b; --sk-chip-h: 34px; --sk-chip-r: 999px;
+    --body-bg: radial-gradient(900px 420px at 10% -8%, rgba(245,168,28,.16), transparent 60%), radial-gradient(800px 420px at 95% 0, rgba(28,117,188,.18), transparent 60%), #2b313c;
+  }
+
+  [data-skin="lightav"] {
+    --bg: #f5efe2; --text: #1f2a44; --muted: #6f6a5e; --line: #e4dac6;
+    --meteo-bg: #fffdf8; --meteo-border: 2px solid #e4dac6; --radius: 18px;
+    --th-bg: #fbf6ea; --th-color: #1d78c1; --th-size: .72rem; --th-ls: .08em; --th-tf: uppercase; --th-border: #e4dac6; --th-shadow: 6px 0 10px -6px rgba(31,42,68,.14);
+    --hours-bg: #faf4e6; --now-bg: rgba(246,168,28,.18); --nowhead-bg: #f28a1f; --nowhead-color: #1f2a44; --nowhead-day: rgba(31,42,68,.75);
+    --tide: rgba(42,122,155,.6); --tide-now: #2a7a9b; --tide-now-bg: rgba(246,168,28,.18); --ti: #2a7a9b; --arrow: #2a7a9b;
+    --chip-bg: #fffdf8; --chip-border: #f6a81c; --chip-pad: 7px 14px; --chip-weight: 700; --chip-sep: "";
+    --top-dir: row; --top-ai: center; --top-gap: 14px 28px; --top-jc: space-between; --subtitle-jc: flex-start; --subtitle-size: .85rem; --subtitle-color: #1f2a44;
+    --h1-font: Shrikhand, "DM Sans", serif; --h1-size: clamp(2.4rem, 5.2vw, 3.8rem); --h1-weight: 400; --h1-ls: 0; --h1-color: #1f2a44;
+    --h1-shadow: 2px 2px 0 #f6a81c, 4px 4px 0 #f28a1f, 6px 6px 0 #d92b2b, 8px 8px 0 #1d78c1;
+    --h2-font: Shrikhand, "DM Sans", serif; --h2-size: 1.25rem; --h2-weight: 400; --h2-color: #2a7a9b; --h2-ls: 0;
+    --cam-bg: #fffdf8; --cam-border: 2px solid #e4dac6; --cam-shadow: 0 10px 28px rgba(31,42,68,.12); --cam-radius: 18px; --head-pad: 12px 16px; --stripe-h: 10px;
+    --badge-bg: #f1e9d8; --badge-color: #6f6a5e; --badge-border: #e4dac6;
+    --live-bg: rgba(22,163,74,.12); --live-color: #15803d; --live-border: #16a34a; --live-dot: #16a34a;
+    --off-bg: #f1e9d8; --off-color: #6f6a5e; --off-border: #d92b2b;
+    --frame-bg: #11151b; --gap: 28px;
+    --wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='56' viewBox='0 0 120 56'%3E%3Cg fill='none' stroke-width='5' stroke-linecap='round'%3E%3Cpath d='M0 10Q30-2 60 10T120 10' stroke='%23f5a81c'/%3E%3Cpath d='M0 19Q30 7 60 19T120 19' stroke='%23f28c1e'/%3E%3Cpath d='M0 28Q30 16 60 28T120 28' stroke='%23e0312b'/%3E%3Cpath d='M0 37Q30 25 60 37T120 37' stroke='%231c75bc'/%3E%3Cpath d='M0 46Q30 34 60 46T120 46' stroke='%232a7a9b'/%3E%3C/g%3E%3C/svg%3E"); --wave-h: 56px;
+    --sk-a: #efe6d2; --sk-b: #faf5ea; --sk-chip-h: 34px; --sk-chip-r: 999px;
+    --body-bg: radial-gradient(900px 420px at 10% -8%, rgba(246,168,28,.22), transparent 60%), radial-gradient(800px 420px at 95% 0, rgba(29,120,193,.14), transparent 60%), #f5efe2;
+  }
+
+  [data-skin="psy"] {
+    --bg: #f29a2e; --text: #1d3557; --muted: #5a4a6a; --line: #e3c98a;
+    --meteo-bg: #fdf3d6; --meteo-border: 3px solid #1d3557; --radius: 24px;
+    --th-bg: #f6d77c; --th-color: #1d3557; --th-size: .75rem; --th-ls: .06em; --th-tf: uppercase; --th-border: #1d3557; --th-shadow: 5px 0 0 -2px rgba(29,53,87,.25);
+    --hours-bg: #fbe9b5; --now-bg: #f9c97a; --nowhead-bg: #c8467a; --nowhead-color: #fff; --nowhead-day: rgba(255,255,255,.85);
+    --tide: rgba(46,134,193,.55); --tide-now: #1f8a96; --tide-now-bg: #f9c97a; --ti: #1d3557; --arrow: #e2574c;
+    --chip-bg: #fdf3d6; --chip-border: #1d3557; --chip-pad: 7px 14px; --chip-weight: 700; --chip-sep: "";
+    --top-dir: row; --top-ai: center; --top-gap: 14px 28px; --top-jc: space-between; --subtitle-jc: flex-start; --subtitle-size: .88rem; --subtitle-color: #1d3557;
+    --h1-font: Modak, "Chango", cursive; --h1-size: clamp(2.2rem, 5.2vw, 3.8rem); --h1-weight: 400; --h1-ls: .01em; --h1-color: #fdf3d6;
+    --h1-shadow: 3px 3px 0 #1d3557, 6px 6px 0 #c8467a;
+    --h2-font: Modak, Chango, cursive; --h2-size: 1.5rem; --h2-weight: 400; --h2-color: transparent; --h2-stroke: 1px #1d3557; --h2-fill: linear-gradient(to bottom, #f6c453, #e2574c); --h2-ls: 0;
+    --cam-bg: #fdf3d6; --cam-border: 3px solid #1d3557; --cam-shadow: 6px 6px 0 #1d3557; --cam-radius: 24px; --head-pad: 12px 16px; --stripe-h: 0px;
+    --stripe-bg: linear-gradient(90deg, #f6c453, #e2574c, #c8467a, #2e86c1, #1f8a96);
+    --badge-bg: #f6d77c; --badge-color: #1d3557; --badge-border: #1d3557;
+    --live-bg: #b7f0c4; --live-color: #14532d; --live-border: #14532d; --live-dot: #16a34a;
+    --off-bg: #f2a6b8; --off-color: #1d3557; --off-border: #1d3557;
+    --frame-bg: #11151b; --gap: 32px;
+    --wave: none; --wave-h: 0px;
+    --sk-a: #f3dfa6; --sk-b: #fbeec7; --sk-chip-h: 34px; --sk-chip-r: 999px;
+    --body-bg: repeating-conic-gradient(from 0deg at 50% -12%, #f29a2e 0deg 4deg, #f7c04a 4deg 8deg);
+  }
+
+  [data-skin="surfclub"] {
+    --bg: #e4f1f3; --text: #5a1f2a; --muted: #8a6670; --line: #e8dcc4;
+    --meteo-bg: #fffdf8; --meteo-border: 2px solid #8d2331; --radius: 4px;
+    --th-bg: #f3e8d0; --th-color: #8d2331; --th-size: .72rem; --th-ls: .12em; --th-tf: uppercase; --th-border: #e0cfae; --th-shadow: 6px 0 8px -6px rgba(90,31,42,.2);
+    --hours-bg: #f9f2e1; --now-bg: rgba(114,179,192,.22); --nowhead-bg: #8d2331; --nowhead-color: #fff; --nowhead-day: rgba(255,255,255,.8);
+    --tide: rgba(79,169,184,.6); --tide-now: #3f9aab; --tide-now-bg: rgba(114,179,192,.22); --ti: #8d2331; --arrow: #8d2331;
+    --chip-bg: #fffdf8; --chip-border: #8d2331; --chip-pad: 6px 12px; --chip-weight: 600; --chip-sep: "";
+    --top-dir: row; --top-ai: baseline; --top-gap: 10px 24px; --top-jc: space-between; --subtitle-jc: flex-start; --subtitle-size: .85rem; --subtitle-color: #3f7c8a;
+    --h1-font: Limelight, "Josefin Sans", serif; --h1-size: clamp(2.3rem, 5vw, 3.8rem); --h1-weight: 400; --h1-ls: .02em; --h1-color: #8d2331;
+    --h1-shadow: 3px 3px 0 #b9dbe1;
+    --h2-font: Limelight, "Josefin Sans", serif; --h2-size: 1.25rem; --h2-weight: 400; --h2-ls: .02em; --h2-color: #8d2331;
+    --cam-bg: #fffdf8; --cam-border: 2px solid #8d2331; --cam-shadow: 0 10px 24px rgba(40,70,90,.28); --cam-radius: 4px; --head-pad: 12px 16px;
+    --badge-bg: #f3e8d0; --badge-color: #8d2331; --badge-border: #8d2331;
+    --live-bg: #dff1e7; --live-color: #1f7a4d; --live-border: #1f7a4d; --live-dot: #1f9d62;
+    --off-bg: #f3e8d0; --off-color: #8a6670; --off-border: #c9b48e;
+    --frame-bg: #11151b; --gap: 28px;
+    --wave: none; --wave-h: 0px;
+    --sk-a: #efe3c8; --sk-b: #f9f1df; --sk-chip-h: 32px; --sk-chip-r: 999px;
+    --body-bg: repeating-conic-gradient(from 0deg at 50% 38%, #e4f1f3 0deg 5deg, #edf6f7 5deg 10deg);
+  }
+
+  * { box-sizing: border-box; }
+  body { font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; color: var(--text); background: var(--body-bg); background-attachment: fixed; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1400px; margin: 0 auto; padding: 32px 24px 56px; }
+
+  /* En-tête fixe : son fond reprend celui de la page (fixé au viewport) pour masquer le contenu qui défile dessous. */
+  .titlebar { position: sticky; top: 0; z-index: 100; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px 24px; margin: 0 -24px 12px; padding: 12px 24px; background: var(--body-bg); background-attachment: fixed; }
+  .titlebar .top { flex: 1 1 0; min-width: 0; }
+  .skin-picker { position: relative; flex: none; }
+  .skin-picker::after { content: ""; position: absolute; right: 16px; top: 50%; width: 7px; height: 7px; margin-top: -6px; border: solid var(--text); border-width: 0 2px 2px 0; transform: rotate(45deg); pointer-events: none; }
+  .skin-picker select { width: 150px; appearance: none; -webkit-appearance: none; font: inherit; font-size: .85rem; line-height: 1.2; padding: 8px 40px 8px 16px; border-radius: 999px; border: 1px solid var(--h1-color); background-color: var(--meteo-bg); color: var(--text); cursor: pointer; }
+  /* menu centré sur la ligne « Local surf report » (line-height 1rem ; menu ~34 px) : même position pour tous les styles */
+  .controls { display: flex; align-items: center; gap: 16px; margin-left: auto; margin-top: -9px; }
+  .skin-picker select:focus, .skin-picker select:focus-visible { outline: none; }
+
+
+  .top { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+  h1 { margin: 0; font-family: var(--h1-font); font-size: var(--h1-size); font-weight: var(--h1-weight); letter-spacing: var(--h1-ls); color: var(--h1-color); text-shadow: var(--h1-shadow); background: var(--h1-fill); -webkit-background-clip: text; background-clip: text; line-height: 1.1; }
+  .wave { height: var(--wave-h); margin: 0; background: var(--wave) repeat-x left center; }
+  .subtitle { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin: 0; min-height: 1.6em; font-size: var(--subtitle-size); color: var(--subtitle-color); }
+  .stats { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  [data-skin="retro"] .stats, [data-skin="lightav"] .stats { gap: 16px 18px; }
+  [data-skin="retro"] .subtitle, [data-skin="lightav"] .subtitle { margin-bottom: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-left: 6px; }
+  .stat { display: flex; flex-direction: column; gap: 2px; min-width: 150px; padding: 10px 20px 9px; border-radius: 16px; background: var(--chip-bg); border: 2px solid var(--chip-border); }
+  [data-skin="ocean"] .stat { border-width: 1px; }
+  .stat-val { display: flex; align-items: baseline; font-family: var(--h2-font); font-size: 2.1rem; font-weight: 700; line-height: 1.1; color: var(--text); }
+  [data-skin="retro"] .stat-val, [data-skin="lightav"] .stat-val, [data-skin="psy"] .stat-val { font-weight: 400; }
+  .stat.center .stat-val { justify-content: center; }
+  .stat-val small { font-family: "DM Sans", system-ui, sans-serif; font-size: .9rem; font-weight: 500; margin-left: 4px; color: var(--muted); }
+  .stat-val .per { display: flex; align-items: baseline; margin-left: 16px; }
+  .tide-ic { font-family: system-ui, "Segoe UI Symbol", "Apple Symbols", sans-serif; font-style: normal; font-weight: 700; -webkit-text-stroke: 1px currentColor; align-self: center; margin-right: 10px; font-size: 1.1rem; color: var(--arrow); }
+  .stat-val .arrow { margin-left: 10px; font-size: 1.6rem; align-self: center; }
+  .eyebrow { margin: 0; font-size: .72rem; line-height: 1rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--subtitle-color); }
+  .stat-label { align-self: center; text-align: center; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .chip { color: var(--text); font-size: .78rem; padding: 5px 11px; border-radius: 999px; background: var(--chip-bg); border: 2px solid var(--chip-border); font-weight: var(--chip-weight); white-space: nowrap; }
+  [data-skin="ocean"] .chip, [data-skin="surfclub"] .chip { border-width: 1px; }
+  [data-skin="surfclub"] .eyebrow { font-size: .8rem; letter-spacing: .34em; }
+  .chip + .chip::before { content: var(--chip-sep); margin: 0 8px; }
+  [data-skin="retro"] .chip:nth-child(5n+2), [data-skin="lightav"] .chip:nth-child(5n+2) { border-color: #f28c1e; }
+  [data-skin="retro"] .chip:nth-child(5n+3), [data-skin="lightav"] .chip:nth-child(5n+3) { border-color: #e0312b; }
+  [data-skin="retro"] .chip:nth-child(5n+4), [data-skin="lightav"] .chip:nth-child(5n+4) { border-color: #1c75bc; }
+  [data-skin="retro"] .chip:nth-child(5n), [data-skin="lightav"] .chip:nth-child(5n) { border-color: #2a7a9b; }
+  [data-skin="psy"] .chip:nth-child(5n+1) { background: #f9d46b; } [data-skin="psy"] .chip:nth-child(5n+2) { background: #8fd1c9; }
+  [data-skin="psy"] .chip:nth-child(5n+3) { background: #f2a6b8; } [data-skin="psy"] .chip:nth-child(5n+4) { background: #9cc8ea; }
+  [data-skin="psy"] .chip:nth-child(5n) { background: #f7b27a; }
+  [data-skin="psy"] .frame { border-bottom: 3px solid #1d3557; }
+  [data-skin="psy"] .meteo td.tide { background: linear-gradient(to top, transparent var(--p), #fdf3d6 var(--p)) content-box, linear-gradient(to top, #e2574c, #f6c453) content-box; }
+  [data-skin="psy"] .meteo td.tide.now { background: linear-gradient(to top, transparent var(--p), #f9c97a var(--p)) content-box, linear-gradient(to top, #e2574c, #f6c453) content-box, linear-gradient(#f9c97a, #f9c97a) border-box; }
+  /* Flèches : police système et aucun style italique hérité (Shrikhand/Modak sont penchées et déformaient le symbole) */
+  .subtitle .arrow, .meteo .arrow { display: inline-block; margin-left: 4px; color: var(--arrow); font-weight: 400; font-style: normal; font-synthesis: none; font-family: system-ui, "Segoe UI Symbol", "Apple Symbols", sans-serif; }
+
+  .meteo { margin: 20px 0; overflow-x: auto; border-radius: var(--radius); background: var(--meteo-bg); border: var(--meteo-border); }
+  .meteo:empty { display: none; }
+  .source { margin: -12px 0 20px; text-align: right; font-size: .68rem; letter-spacing: .02em; color: var(--subtitle-color); opacity: .6; }
+  .source:empty { display: none; }
+  .meteo table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: .9rem; text-align: center; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .meteo th, .meteo td { padding: 8px 14px; border-bottom: 1px solid var(--line); }
+  .meteo td { padding: 8px 8px; }
+  .meteo td.newday { border-left: 2px solid color-mix(in srgb, var(--muted) 55%, transparent); }
+  .meteo tr:last-child th, .meteo tr:last-child td { border-bottom: 0; }
+  .meteo th { position: sticky; left: 0; z-index: 2; background: var(--th-bg); color: var(--th-color); text-align: left; font-size: var(--th-size); font-weight: 600; letter-spacing: var(--th-ls); text-transform: var(--th-tf); border-right: 1px solid var(--th-border); box-shadow: var(--th-shadow); }
+  .meteo .day { display: block; font-size: .7rem; font-weight: 400; color: var(--muted); text-transform: capitalize; }
+  .meteo tr.hours td { font-weight: 600; background: var(--hours-bg); }
+  .meteo td.now { background: var(--now-bg); }
+  .meteo tr.hours td.now { background: var(--nowhead-bg); color: var(--nowhead-color); }
+  .meteo tr.hours td.now .day { color: var(--nowhead-day); }
+  .meteo td.tide { position: relative; height: 60px; padding: 0 2px; background: linear-gradient(to top, var(--tide) var(--p), transparent var(--p)) content-box; font-size: .75rem; }
+  .meteo td.tide.now { background: linear-gradient(to top, var(--tide-now) var(--p), transparent var(--p)) content-box, linear-gradient(var(--tide-now-bg), var(--tide-now-bg)) border-box; }
+  .meteo td.tide span { position: relative; display: block; padding: 5px; line-height: 1.25; }
+  .meteo td.tide .ti { font-family: system-ui, "Segoe UI Symbol", "Apple Symbols", sans-serif; font-style: normal; font-weight: 400; display: block; font-size: .7rem; color: var(--ti); }
+
+  .sk { display: block; height: 14px; min-width: 38px; border-radius: 6px; background: linear-gradient(90deg, var(--sk-a) 25%, var(--sk-b) 50%, var(--sk-a) 75%) 0 0 / 200% 100%; animation: sk 1.2s linear infinite; }
+  .subtitle .sk-line { width: 260px; max-width: 100%; height: 28px; border-radius: 999px; }
+  .subtitle .sk-stat { width: 150px; height: 70px; border-radius: 16px; }
+  .meteo table.loading tr:last-child td { height: 60px; }
+  @keyframes sk { to { background-position: -200% 0; } }
+
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--gap); }
+  .cam { background: var(--cam-bg); border: var(--cam-border); border-radius: var(--cam-radius); box-shadow: var(--cam-shadow); overflow: hidden; }
+  .cam::before { content: ""; display: block; height: var(--stripe-h); background: var(--stripe-bg); }
+  .head { display: flex; align-items: center; justify-content: flex-start; gap: 10px; padding: var(--head-pad); flex-wrap: wrap; }
+  [data-skin="ocean"] .head, [data-skin="surfclub"] .head, [data-skin="retro"] .head, [data-skin="lightav"] .head, [data-skin="psy"] .head { justify-content: space-between; }
+  .cam h2 { margin: 0; font-family: var(--h2-font); font-size: var(--h2-size); font-weight: var(--h2-weight); letter-spacing: var(--h2-ls); color: var(--h2-color); background: var(--h2-fill); -webkit-background-clip: text; background-clip: text; -webkit-text-stroke: var(--h2-stroke); }
+  .badge { display: inline-flex; align-items: center; font-size: .72rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--badge-bg); color: var(--badge-color); border: 2px solid var(--badge-border); white-space: nowrap; }
+  .badge.live { background: var(--live-bg); color: var(--live-color); border-color: var(--live-border); }
+  .badge.live::before { content: ""; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: var(--live-dot); }
+  [data-skin="ocean"] .badge.live::before, [data-skin="surfclub"] .badge.live::before, [data-skin="retro"] .badge.live::before, [data-skin="lightav"] .badge.live::before, [data-skin="psy"] .badge.live::before { animation: pulse 1.7s ease-in-out infinite; }
+  .badge.off { background: var(--off-bg); color: var(--off-color); border-color: var(--off-border); }
+  @keyframes pulse { 50% { opacity: .35; } }
+  .frame { position: relative; width: 100%; aspect-ratio: 16 / 9; background: var(--frame-bg); }
+  .frame .video-js, .frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .err { position: absolute; inset: auto 8px 8px 8px; font-size: .8rem; color: #fca5a5; z-index: 5; }
+
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { [data-skin="retro"] h1, [data-skin="lightav"] h1 { text-shadow: 1px 1px 0 #f5a81c, 2px 2px 0 #f28c1e, 3px 3px 0 #e0312b, 4px 4px 0 #1c75bc; } .wrap { padding: 24px 14px 40px; } .titlebar { margin: 0 -14px 12px; padding: 10px 14px; } .grid { gap: 20px; }  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="titlebar">
+    <header class="top">
+      <p class="eyebrow" id="eyebrow">Surf report</p>
+      <h1>Hossegor - Capbreton</h1>
+    </header>
+    <div class="controls">
+    <div class="skin-picker">
+      <select id="skin" aria-label="Style de la page">
+        <option value="ocean">Océan</option>
+        <option value="surfclub">La Centrale</option>
+        <option value="retro">Dark AV</option>
+        <option value="lightav">Light AV</option>
+        <option value="psy">Psy</option>
+      </select>
+    </div>
+    </div>
+  </div>
+  <p class="subtitle" id="subtitle"></p>
+  <div class="wave" aria-hidden="true"></div>
+  <div class="meteo" id="meteo"></div>
+  <p class="source" id="source"></p>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.21.5/video.min.js"></script>
+<script src="https://viewsurf.quanteec.com/lib/quanteec/3.0.2/videojs-quanteec-plugin.js"></script>
+<script>
+  const skinSelect = document.getElementById('skin');
+  skinSelect.value = document.documentElement.dataset.skin;
+  if (skinSelect.value !== document.documentElement.dataset.skin) skinSelect.value = 'retro';
+  skinSelect.addEventListener('change', () => {
+    document.documentElement.dataset.skin = skinSelect.value;
+    setFavicon(skinSelect.value);
+    try { localStorage.setItem('skin', skinSelect.value); } catch (e) {}
+  });
+</script>
+<script>
+  // type "live" / "vod" : lecteur Quanteec ; "iframe" : embed ViewSurf
+  const CAMS = [
+    { title: 'La Centrale',   type: 'live', id: '04593c63-5af6-462d-3536-3230-6d61-63-9bbe-827fb3625ccfd', poster: 'https://films.viewsurf.com/hossegor01_live.stream/media.jpg' },
+    { title: 'La Nord',       type: 'vod',  page: 'https://gosurf.fr/webcam/fr/170/Hossegor-Plage-de-la-Nord', id: '7ec800b7-d98b-4c19-3636-3230-6d61-63-8bdb-519f8ef13dd6d', poster: 'https://films.viewsurf.com/hossegor02/1/1/media_1793094603.jpg' },
+    { title: 'Les Estagnots', type: 'vod',  page: 'https://www.viewsurf.com/univers/surf/vue/14374-france-aquitaine-seignosse-les-estagnots', id: 'f15ff798-7425-42ce-3937-3430-6d61-63-8d21-f67fba7df4e1d' },
+    { title: 'Les Bourdaines', type: 'live', id: '8da4aff9-9afb-47ce-3937-3430-6d61-63-b10b-bae5e6dead40d', poster: 'https://films.viewsurf.com/seignosse01_live/media.jpg' },
+    { title: 'Le Penon',      type: 'live', id: '0c5055bb-8a96-4c3c-3837-3430-6d61-63-943b-480da283f7bed', poster: 'https://films.viewsurf.com/seignosse02_live/media.jpg' },
+    { title: 'Santosha',      type: 'live', id: '0c2f35a6-eb76-46ee-3932-3130-6d61-63-9e6e-ec65d58221a1d', poster: 'https://films.viewsurf.com/capbreton02_live/media.jpg' },
+    { title: 'Le Prévent',    type: 'live', id: 'c2e5b4bd-c7be-413f-3832-3130-6d61-63-9268-057378aad627d', poster: 'https://films.viewsurf.com/capbreton01_live/media.jpg' },
+  ];
+
+  // Les enregistrements changent d'identifiant à chaque mise à jour : on relit l'identifiant courant sur la page GoSurf
+  // (via le relais r.jina.ai), et on garde celui du tableau CAMS si la lecture échoue.
+  async function currentSource(cam) {
+    if (!cam.page) return cam;
+    try {
+      const res = await fetch('https://r.jina.ai/' + cam.page, { headers: { 'X-No-Cache': 'true', 'X-Return-Format': 'html' } });
+      const html = await res.text();
+      const v = new DOMParser().parseFromString(html, 'text/html').querySelector('video-js[data-src]');
+      if (v) return { ...cam, id: v.dataset.src, poster: v.dataset.poster || cam.poster };
+      const m = html.match(/embeded\.html\?uuid=([0-9a-f-]+)/);   // page ViewSurf : lecteur en iframe
+      if (m) return { ...cam, id: m[1] };
+    } catch (e) {}
+    return cam;
+  }
+
+  const fmt = d => d.toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+
+  // Direct = playlist non terminée avec un segment récent ; sinon on affiche la date du dernier contenu.
+  async function updateBadge(badge, masterUrl, isLive) {
+    try {
+      const master = await (await fetch(masterUrl, { cache: 'no-store' })).text();
+      const rel = master.split('\n').find(l => l.trim() && !l.startsWith('#'));
+      const res = await fetch(new URL(rel.trim(), masterUrl), { cache: 'no-store' });
+      const body = await res.text();
+      const pdt = body.match(/#EXT-X-PROGRAM-DATE-TIME:(\S+)/g);
+      const last = pdt ? new Date(pdt[pdt.length - 1].split(':').slice(1).join(':')) : null;
+      const lm = res.headers.get('last-modified') ? new Date(res.headers.get('last-modified')) : null;
+      const ended = /#EXT-X-ENDLIST/.test(body);
+
+      if (!ended && last && Date.now() - last.getTime() < 120000) {
+        badge.className = 'badge live'; badge.textContent = 'LIVE';
+      } else if (!last) {
+        badge.className = 'badge off';
+        badge.textContent = 'Hors ligne' + (lm ? ' · depuis le ' + fmt(lm) : '');
+      } else if (isLive) {
+        badge.className = 'badge off';
+        badge.textContent = 'Hors ligne · depuis le ' + fmt(last);
+      } else {
+        badge.className = 'badge';
+        badge.textContent = 'Enregistrement · ' + fmt(last);
+      }
+    } catch (e) {
+      badge.className = 'badge'; badge.textContent = 'Statut inconnu';
+    }
+  }
+
+  // --- Météo -------------------------------------------------------------------------
+  // Sous-titre (températures) : Open-Meteo, lisible depuis une page locale.
+  // Tableau : page GoSurf lue via le relais r.jina.ai (GoSurf bloque la lecture directe depuis file://),
+  // avec les données Open-Meteo en secours si le relais échoue.
+  const METEO_URL = 'https://gosurf.fr/webcam/fr/21/Hossegor-La-Centrale';
+  const HOURS = 12;
+
+  async function openMeteo() {
+    const q = '?latitude=43.66&longitude=-1.44&timezone=Europe%2FParis&forecast_hours=' + HOURS;
+    const [a, w] = await Promise.all([
+      fetch('https://api.open-meteo.com/v1/forecast' + q + '&wind_speed_unit=kmh&current=temperature_2m&hourly=wind_speed_10m,wind_direction_10m').then(r => r.json()),
+      fetch('https://marine-api.open-meteo.com/v1/marine' + q + '&current=sea_surface_temperature&hourly=wave_height,wave_direction,wave_period,sea_level_height_msl').then(r => r.json()),
+    ]);
+    return {
+      air: Math.round(a.current.temperature_2m),
+      water: Math.round(w.current.sea_surface_temperature),
+      cols: a.hourly.time.map((t, i) => {
+        const lv = w.hourly.sea_level_height_msl, tide = lv[i], next = lv[i + 1];
+        const lo = Math.min(...lv), hi = Math.max(...lv);
+        return {
+          now: i === 0,
+          day: new Date(t.slice(0, 10) + 'T12:00:00Z').toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', timeZone: 'UTC' }),
+          h: t.slice(11, 13) + 'h',
+          wind: Math.round(a.hourly.wind_speed_10m[i]), windDir: a.hourly.wind_direction_10m[i] + 180,
+          wave: w.hourly.wave_height[i].toFixed(1), waveDir: w.hourly.wave_direction[i] + 180,
+          per: Math.round(w.hourly.wave_period[i]),
+          tide: { pct: hi > lo ? (tide - lo) / (hi - lo) * 100 : 50, label: tide.toFixed(1) + (next == null ? '' : next > tide ? ' ↑' : ' ↓') },
+        };
+      }),
+    };
+  }
+
+  async function gosurfTable() {
+    const res = await fetch('https://r.jina.ai/' + METEO_URL, { headers: { 'X-No-Cache': 'true', 'X-Return-Format': 'html' } });
+    const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+    const rows = [...doc.querySelectorAll('table tr')];
+    const row = label => { const r = rows.find(r => r.querySelector('th')?.textContent.trim().startsWith(label)); return r && [...r.querySelectorAll('td')]; };
+    const hours = row(''), wind = row('Vent'), wave = row('Houle'), per = row('Période'), tide = row('Marées');
+    if (!hours || !wind || !wave || !per || !tide) throw new Error('tableau introuvable');
+
+    const start = Math.max(0, hours.findIndex(td => td.classList.contains('current')));
+    const rotation = td => parseFloat(td.querySelector('.pi-compas')?.style.transform.match(/rotate\(([-\d.]+)/)?.[1]);
+    const txt = td => td.textContent.replace(/\s+/g, ' ').trim();
+    const cols = [];
+    for (let i = 0; i < hours.length; i++) {
+      const bar = tide[i].querySelector('.bar'), info = tide[i].querySelector('.text');
+      const t = info && [...info.querySelectorAll('div')].map(txt).filter(Boolean);
+      cols.push({
+        now: i === start,
+        day: txt(hours[i]).replace(/\s*\d+h$/, ''),
+        h: txt(hours[i]).match(/(\d+h)$/)[1],
+        wind: Math.round(parseFloat(txt(wind[i]))), windDir: rotation(wind[i]),
+        wave: parseFloat(txt(wave[i])).toFixed(1), waveDir: rotation(wave[i]),
+        per: parseFloat(txt(per[i])),
+        tide: { pct: parseFloat(bar?.style.height) || 0, label: t ? (info.querySelector('.pi-high-tide') ? 'PM ' : 'BM ') + t.join(' ') : '' },
+      });
+    }
+    // GoSurf ne donne le coefficient qu'aux pleines mers : une basse mer reprend celui de la pleine mer qui la précède
+    // (ou, en début de tableau, de celle qui la suit).
+    const coefOf = c => (c.tide.label.match(/^PM \d+h\d+ (\d+)$/) || [])[1];
+    const low = c => /^BM \d+h\d+$/.test(c.tide.label);
+    let coef = null;
+    cols.forEach(c => { if (coefOf(c)) coef = coefOf(c); else if (low(c) && coef) c.tide.label += ' ' + coef; });
+    coef = null;
+    for (let i = cols.length - 1; i >= 0; i--) { if (coefOf(cols[i])) coef = coefOf(cols[i]); else if (low(cols[i]) && coef) cols[i].tide.label += ' ' + coef; }
+    if (!cols.length || cols.some(c => isNaN(c.wind) || isNaN(c.wave))) throw new Error('données invalides');
+    return cols;
+  }
+
+  // Flèche tournée de l'angle donné = sens de déplacement du vent / de la houle (comme GoSurf).
+  // ➤ pointe vers la droite (est) : on retire 90° pour qu'il suive la direction (0° = nord).
+  const arrow = deg => isNaN(deg) ? '' : '<span class="arrow" style="transform:rotate(' + (deg - 90) + 'deg)">➤</span>';
+
+  // Comme GoSurf : icône (haute / basse), heure, puis coefficient pour les pleines mers.
+  function tideText(label) {
+    const m = label.match(/^(PM|BM) (\d+h\d+)(?: (\d+))?$/);
+    if (!m) return label;
+    const high = m[1] === 'PM';
+    return '<b class="ti" title="marée ' + (high ? 'haute' : 'basse') + '">' + (high ? '⤒' : '⤓') + '</b><div>' + m[2] + '</div>' + (m[3] ? '<div>' + m[3] + '</div>' : '');
+  }
+
+  function renderTable(cols) {
+    // Classes de colonne : « now » (heure courante) et « newday » (premier créneau d'un nouveau jour, séparateur à gauche).
+    const cls = (x, i, extra) => [extra, x.now && 'now', i > 0 && x.day !== cols[i - 1].day && 'newday'].filter(Boolean).join(' ');
+    const cell = fn => cols.map((x, i) => '<td class="' + cls(x, i) + '">' + fn(x) + '</td>').join('');
+    const tideCell = cols.map((x, i) => '<td class="' + cls(x, i, 'tide') + '" style="--p:' + x.tide.pct.toFixed(0) + '%"><span>' + tideText(x.tide.label) + '</span></td>').join('');
+    document.getElementById('meteo').innerHTML = '<table>' +
+      '<tr class="hours"><th>Heure</th>' + cell(x => (x.day ? '<span class="day">' + x.day + '</span>' : '') + x.h) + '</tr>' +
+      '<tr><th>Vent (km/h)</th>' + cell(x => x.wind + arrow(x.windDir)) + '</tr>' +
+      '<tr><th>Houle (m)</th>' + cell(x => x.wave + arrow(x.waveDir)) + '</tr>' +
+      '<tr><th>Période (s)</th>' + cell(x => x.per) + '</tr>' +
+      '<tr><th>Marée</th>' + tideCell + '</tr>' +
+      '</table>';
+    const box = document.getElementById('meteo'), now = box.querySelector('td.now');
+    box.scrollLeft = now.offsetLeft - now.parentNode.firstChild.offsetWidth;
+  }
+
+  // Prochaine pleine ou basse mer (« haute 17h05 ») à partir de maintenant ; absente du tableau de secours.
+  function nextTide(cols) {
+    const d = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', hour: 'numeric', minute: 'numeric', hourCycle: 'h23' }).formatToParts(new Date());
+    const min = +d.find(p => p.type === 'hour').value * 60 + +d.find(p => p.type === 'minute').value;
+    const from = cols.findIndex(c => c.now);
+    for (let i = from; i < cols.length; i++) {
+      const m = cols[i].tide.label.match(/^(PM|BM) (\d+)h(\d+)/);
+      if (m && (i > from || +m[2] * 60 + +m[3] >= min)) return (m[1] === 'PM' ? 'haute ' : 'basse ') + m[2] + 'h' + m[3];
+    }
+  }
+
+  function skeleton() {
+    const sk = '<td><i class="sk"></i></td>'.repeat(HOURS);
+    document.getElementById('subtitle').innerHTML = '<div class="stats">' + '<i class="sk sk-stat"></i>'.repeat(5) + '</div>';
+    document.getElementById('meteo').innerHTML = '<table class="loading" aria-busy="true">' +
+      ['Heure', 'Vent (km/h)', 'Houle (m)', 'Période (s)', 'Marée'].map(l => '<tr><th>' + l + '</th>' + sk + '</tr>').join('') + '</table>';
+  }
+
+  function updateEyebrow() {
+    const now = new Date(), tz = { timeZone: 'Europe/Paris' };
+    document.getElementById('eyebrow').textContent = 'Surf report du ' +
+      now.toLocaleDateString('fr-FR', { ...tz, day: 'numeric', month: 'long' }) + ' à ' +
+      now.toLocaleTimeString('fr-FR', { ...tz, hour: '2-digit', minute: '2-digit' });
+  }
+  updateEyebrow();
+  setInterval(updateEyebrow, 30000);
+
+  async function loadMeteo() {
+    skeleton();
+    const el = document.getElementById('subtitle');
+    const [meteo, table] = await Promise.allSettled([openMeteo(), gosurfTable()]);
+    const cols = table.status === 'fulfilled' ? table.value : meteo.status === 'fulfilled' ? meteo.value.cols : null;
+    // Cartouches : houle, vent, marée, air, eau.
+    const stat = (inner, label, extra = '') => '<div class="stat ' + extra + '"><span class="stat-val">' + inner + '</span><span class="stat-label">' + label + '</span></div>';
+    const val = (v, unit, dir) => v + '<small>' + unit + '</small>' + arrow(dir);
+    const items = [];
+    const cur = cols && cols.find(c => c.now);
+    if (cur) {
+      items.push(stat(val(cur.wave, ' m', cur.waveDir) + '<span class="per">' + cur.per + '<small> s</small></span>', 'Houle'),
+                 stat(val(cur.wind, ' km/h', cur.windDir), 'Vent'));
+    }
+    const t = cols && nextTide(cols);   // « haute 17h05 » / « basse 23h11 »
+    if (t) {
+      const [kind, time] = t.split(' ');
+      items.push(stat('<span class="tide-ic">' + (kind === 'haute' ? '⤒' : '⤓') + '</span>' + time, 'Marée ' + kind));
+    }
+    if (meteo.status === 'fulfilled') {
+      items.push(stat(val(meteo.value.air, ' °C'), 'Air', 'center'), stat(val(meteo.value.water, ' °C'), 'Eau', 'center'));
+    }
+    el.innerHTML = items.length ? '<div class="stats">' + items.join('') + '</div>' : '';
+    if (cols) renderTable(cols);
+    else document.getElementById('meteo').innerHTML = '';
+    const fromGoSurf = table.status === 'fulfilled', hasTemps = meteo.status === 'fulfilled';
+    document.getElementById('source').textContent = !cols ? '' : 'Source : ' +
+      (fromGoSurf ? 'GoSurf' + (hasTemps ? ' (prévisions), Open-Meteo (températures)' : '') : 'Open-Meteo');
+  }
+  loadMeteo();
+
+  const grid = document.getElementById('grid');
+  quanteecSourceHandler.register();
+
+  CAMS.forEach((cam, i) => {
+    const box = document.createElement('section');
+    box.className = 'cam';
+    box.innerHTML = '<div class="frame"></div><div class="head"><h2></h2><span class="badge"></span></div>';
+    box.querySelector('h2').textContent = cam.title;
+    const badge = box.querySelector('.badge');
+    const frame = box.querySelector('.frame');
+    grid.appendChild(box);
+
+    if (cam.type === 'iframe') {
+      badge.textContent = 'Timelapse';
+      const f = document.createElement('iframe');
+      f.src = cam.src;
+      f.allow = 'autoplay; fullscreen';
+      f.allowFullscreen = true;
+      f.scrolling = 'no';
+      frame.appendChild(f);
+      return;
+    }
+
+    const el = document.createElement('video-js');
+    el.id = 'cam' + i;
+    el.className = 'vjs-default-skin vjs-big-play-centered';
+    el.setAttribute('playsinline', '');
+    frame.appendChild(el);
+
+    const isLive = cam.type === 'live';
+    const fail = msg => { const d = document.createElement('div'); d.className = 'err'; d.textContent = msg; frame.appendChild(d); };
+
+    currentSource(cam).then(c => {
+      const cfg = { clientID: 'viewsurf', videoID: c.id, refreshSources: true, externalLive: isLive };
+      return quanteecSourceHandler.Quanteec.getSourceUrls(cfg).then(s => ({ s, cfg, c }));
+    }).then(({ s, cfg, c }) => {
+      if (!s || !s.m3u8) return fail('Aucune source retournée');
+      updateBadge(badge, s.m3u8, isLive);
+      setInterval(() => updateBadge(badge, s.m3u8, isLive), 60000);
+      const player = videojs(el, {
+        controls: true, autoplay: 'any', muted: true, loop: true, liveui: false, fill: true,
+        techOrder: ['html5'], poster: s.poster || c.poster,
+        html5: { quanteec: cfg, hlsjsConfig: { startLevel: 0, liveSyncDurationCount: 5, initialLiveManifestSize: 3 } }
+      });
+      player.src([{ src: s.m3u8, type: 'application/x-mpegurl' }]);
+      player.on('error', () => fail('Erreur lecteur'));
+    }).catch(e => fail('Erreur : ' + e));
+  });
+</script>
+</body>
+</html>
