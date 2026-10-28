@@ -9,6 +9,7 @@
 <meta name="description" content="Surfcams Hossegor - Capbreton">
 
 <link rel="icon" id="favicon" type="image/svg+xml" href="data:,">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script>
   // Favicon : planche de surf, couleurs selon le style choisi [fond, planche, bande]
   var FAVICON_COLORS = { ocean: ["#f3f6f8", "#0b6e8f", "#ffffff"], surfclub: ["#72b3bf", "#8d2331", "#ffffff"], retro: ["#2b313c", "#f5a81c", "#e0312b"], lightav: ["#f5efe2", "#f28a1f", "#1d78c1"], psy: ["#f29a2e", "#fdf3d6", "#c8467a"] };
@@ -156,7 +157,7 @@
 
   /* En-tête fixe : son fond reprend celui de la page (fixé au viewport) pour masquer le contenu qui défile dessous. */
   .titlebar { position: sticky; top: 0; z-index: 100; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px 24px; margin: 0 -24px 12px; padding: 12px 24px; background: var(--body-bg); background-attachment: fixed; }
-  .titlebar .top { flex: 1 1 0; min-width: 0; }
+  .titlebar .top { flex: 1 1 auto; }
   .skin-picker { position: relative; flex: none; }
   .skin-picker::after { content: ""; position: absolute; right: 16px; top: 50%; width: 7px; height: 7px; margin-top: -6px; border: solid var(--text); border-width: 0 2px 2px 0; transform: rotate(45deg); pointer-events: none; }
   .skin-picker select { width: 150px; appearance: none; -webkit-appearance: none; font: inherit; font-size: .85rem; line-height: 1.2; padding: 8px 40px 8px 16px; border-radius: 999px; border: 1px solid var(--h1-color); background-color: var(--meteo-bg); color: var(--text); cursor: pointer; }
@@ -166,7 +167,7 @@
 
 
   .top { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
-  h1 { margin: 0; font-family: var(--h1-font); font-size: var(--h1-size); font-weight: var(--h1-weight); letter-spacing: var(--h1-ls); color: var(--h1-color); text-shadow: var(--h1-shadow); background: var(--h1-fill); -webkit-background-clip: text; background-clip: text; line-height: 1.1; }
+  h1 { margin: 0; font-family: var(--h1-font); font-size: var(--h1-size); font-weight: var(--h1-weight); letter-spacing: var(--h1-ls); color: var(--h1-color); text-shadow: var(--h1-shadow); white-space: nowrap; background: var(--h1-fill); -webkit-background-clip: text; background-clip: text; line-height: 1.1; }
   .wave { height: var(--wave-h); margin: 0; background: var(--wave) repeat-x left center; }
   .subtitle { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin: 0; min-height: 1.6em; font-size: var(--subtitle-size); color: var(--subtitle-color); }
   .stats { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
@@ -244,7 +245,7 @@
   .err { position: absolute; inset: auto 8px 8px 8px; font-size: .8rem; color: #fca5a5; z-index: 5; }
 
   @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
-  @media (max-width: 600px) { [data-skin="retro"] h1, [data-skin="lightav"] h1 { text-shadow: 1px 1px 0 #f5a81c, 2px 2px 0 #f28c1e, 3px 3px 0 #e0312b, 4px 4px 0 #1c75bc; } .wrap { padding: 24px 14px 40px; } .titlebar { margin: 0 -14px 12px; padding: 10px 14px; } .grid { gap: 20px; }  }
+  @media (max-width: 600px) { h1 { font-size: min(var(--h1-size), 7vw); } [data-skin="retro"] h1, [data-skin="lightav"] h1 { text-shadow: 1px 1px 0 #f5a81c, 2px 2px 0 #f28c1e, 3px 3px 0 #e0312b, 4px 4px 0 #1c75bc; } .wrap { padding: 24px 14px 40px; } .titlebar { margin: 0 -14px 12px; padding: 10px 14px; } .titlebar .top { flex-basis: 100%; } [data-skin] .eyebrow { white-space: nowrap; font-size: .62rem; letter-spacing: .08em; } .controls { position: absolute; top: 1px; right: 14px; margin: 0; } .skin-picker select { width: 120px; padding: 8px 32px 8px 12px; } .skin-picker::after { right: 12px; } .grid { gap: 20px; }  }
 </style>
 </head>
 <body>
@@ -258,7 +259,7 @@
     <div class="skin-picker">
       <select id="skin" aria-label="Style de la page">
         <option value="ocean">Océan</option>
-        <option value="surfclub">La Centrale</option>
+        <option value="surfclub">Pl. des Landais</option>
         <option value="retro">Dark AV</option>
         <option value="lightav">Light AV</option>
         <option value="psy">Psy</option>
