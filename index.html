@@ -212,8 +212,8 @@
   .meteo td { padding: 8px 8px; }
   .meteo td.newday { border-left: 2px solid color-mix(in srgb, var(--muted) 55%, transparent); }
   .meteo tr:last-child th, .meteo tr:last-child td { border-bottom: 0; }
-  .meteo tr.resume td { padding: 7px 10px; text-align: center; vertical-align: top; white-space: normal; font-size: .85rem; line-height: 1.35; color: var(--muted); }
-  .meteo tr.resume td > div { width: 0; min-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .meteo tr.resume td { padding: 7px 10px; text-align: left; vertical-align: top; white-space: normal; font-size: .85rem; line-height: 1.35; color: var(--muted); }
+  .meteo tr.resume td > div { width: 0; min-width: 100%; white-space: normal; }
   .meteo tr.resume b { margin-right: .4em; color: var(--text); font-weight: 700; }
   .quote { display: flex; align-items: flex-start; gap: 8px; max-width: 780px; margin: 0; }
   .quote::before, .quote::after { flex: none; font-family: var(--h2-font); font-size: 4.2rem; font-weight: 400; line-height: .85; color: var(--arrow); }
@@ -256,7 +256,7 @@
   .err { position: absolute; inset: auto 8px 8px 8px; font-size: .8rem; color: #fca5a5; z-index: 5; }
 
   @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
-  @media (max-width: 600px) { h1 { font-size: min(var(--h1-size), 6.5vw); } [data-skin="retro"] h1, [data-skin="lightav"] h1 { text-shadow: 1px 1px 0 #f5a81c, 2px 2px 0 #f28c1e, 3px 3px 0 #e0312b, 4px 4px 0 #1c75bc; } .wrap { padding: 24px 14px 40px; } .titlebar { margin: 0 -14px 12px; padding: 10px 14px; } .titlebar .top { flex-basis: 100%; } [data-skin] .eyebrow { white-space: nowrap; font-size: .62rem; letter-spacing: .08em; } .controls { position: absolute; top: 1px; right: 14px; margin: 0; } .skin-picker select { width: 120px; padding: 8px 32px 8px 12px; } .skin-picker::after { right: 12px; } [data-skin] .stats { gap: 10px; } .stat { padding: 10px 14px 9px; min-width: 120px; } .stat-val { font-size: 1.8rem; } .stat-val .per { margin-left: 10px; } .stat-val .arrow { margin-left: 6px; font-size: 1.4rem; } .quote::before, .quote::after { font-size: 3rem; } .quote-text { font-size: .85rem; } .quote-text b { font-size: 1rem; } .grid { gap: 20px; }  }
+  @media (max-width: 600px) { h1 { font-size: min(var(--h1-size), 6.5vw); } [data-skin="retro"] h1, [data-skin="lightav"] h1 { text-shadow: 1px 1px 0 #f5a81c, 2px 2px 0 #f28c1e, 3px 3px 0 #e0312b, 4px 4px 0 #1c75bc; } .wrap { padding: 24px 14px 40px; } .titlebar { margin: 0 -14px 12px; padding: 10px 14px; } .titlebar .top { flex-basis: 100%; } [data-skin] .eyebrow { white-space: nowrap; font-size: .62rem; letter-spacing: .08em; } .controls { position: absolute; top: 1px; right: 14px; margin: 0; } .skin-picker select { width: 120px; padding: 8px 32px 8px 12px; } .skin-picker::after { right: 12px; } [data-skin] .stats { gap: 10px; } .stat { padding: 10px 14px 9px; min-width: 120px; } .stat-val { font-size: 1.8rem; } .stat-val .per { margin-left: 10px; } .stat-val .arrow { margin-left: 6px; font-size: 1.4rem; } .meteo tr.resume td { font-size: var(--th-size); } .quote::before, .quote::after { font-size: 3rem; } .quote-text { font-size: var(--th-size); } .quote-text b { font-size: 1.15em; } .grid { gap: 20px; }  }
 </style>
 </head>
 <body>
@@ -470,6 +470,24 @@
     const at = f => new Date(Date.parse(dayKey + 'T00:00:00Z') + f * 864e5);
     return [parisHour(at(noon - w)), parisHour(at(noon + w))];
   }
+  // Nuit : jusqu'à 30 min avant le lever du soleil, et dès 30 min après son coucher (créneau évalué à sa mi-heure).
+  function annotateSun(cols) {
+    const suns = {};
+    cols.forEach(x => {
+      const [rise, set] = suns[x.date] || (suns[x.date] = sunTimes(x.date)), t = parseInt(x.h) + 0.5;
+      Object.assign(x, { rise, set, morning: t < 12, night: t < rise - 0.5 || t > set + 0.5 });
+    });
+  }
+  // Créneaux affichés : tout le jour, plus une seule colonne de nuit le matin (la dernière avant l'aube) et une le soir (la première après le crépuscule).
+  function visibleSlots(cols) {
+    if (!cols.every(x => x.date)) return cols.filter(c => { const h = parseInt(c.h); return h >= 6 && h <= 22; });   // tableau de secours : pas de dates
+    annotateSun(cols);
+    return cols.filter((x, i) => {
+      if (!x.night) return true;
+      const near = cols[x.morning ? i + 1 : i - 1];
+      return near && near.date === x.date && !near.night;
+    });
+  }
   // Symbole météo d'un créneau d'après la couverture nuageuse (%) et les précipitations (mm/h) de GoSurf.
   const NIGHT_ICON = '🌛';
   function weatherIcon(x, night) {
@@ -487,19 +505,16 @@
     // Ligne « Météo » : symbole par créneau (absente du tableau de secours Open-Meteo, qui n'a pas ces données).
     let meteoRow = '';
     if (cols.every(x => isFinite(x.cloud) && isFinite(x.rain))) {
-      const suns = {};
       meteoRow = '<tr><th>Météo</th>' + cols.map((x, i) => {
-        const [rise, set] = suns[x.date] || (suns[x.date] = sunTimes(x.date)), t = parseInt(x.h) + 0.5;
-        // Nuit : jusqu'à 30 min avant le lever du soleil, et dès 30 min après son coucher.
-        const icon = weatherIcon(x, t < rise - 0.5 || t > set + 0.5);
+        const icon = weatherIcon(x, x.night);
         const hm = h => { const m = Math.round(h * 60); return Math.floor(m / 60) + 'h' + String(m % 60).padStart(2, '0'); };
-        const title = icon === NIGHT_ICON ? (t < 12 ? 'Lever du soleil ' + hm(rise) : 'Coucher du soleil ' + hm(set))
+        const title = icon === NIGHT_ICON ? (x.morning ? 'Lever du soleil ' + hm(x.rise) : 'Coucher du soleil ' + hm(x.set))
           : 'Nuages ' + x.cloud + ' % · pluie ' + x.rain + ' mm/h';
         return '<td class="' + cls(x, i, 'wx') + '" title="' + title + '">' + icon + '</td>';
       }).join('') + '</tr>';
     }
     const tideCell = cols.map((x, i) => '<td class="' + cls(x, i, 'tide') + '" style="--p:' + x.tide.pct.toFixed(0) + '%"><span>' + tideText(x.tide.label) + '</span></td>').join('');
-    // Ligne « Résumé » : une case fusionnée par jour (colspan = nombre de créneaux du jour) avec le texte Yadusurf.
+    // Ligne « Report » : une case fusionnée par jour (colspan = nombre de créneaux du jour) avec le texte Yadusurf.
     let resume = '';
     if (yadu) {
       const groups = [];
@@ -508,7 +523,7 @@
         const dom = +((g.day || '').match(/\d+/) || [])[0], d = yadu.find(y => +y.date.slice(6) === dom);
         return '<td colspan="' + g.n + '"' + (g.first > 0 ? ' class="newday"' : '') + '>' + (d ? '<div>' + yaduHtml(d) + '</div>' : '') + '</td>';
       });
-      resume = '<tr class="resume"><th>Résumé</th>' + cells.join('') + '</tr>';
+      resume = '<tr class="resume"><th>Report</th>' + cells.join('') + '</tr>';
     }
     document.getElementById('meteo').innerHTML = '<table>' +
       '<tr class="hours"><th>Heure</th>' + cell(x => (x.day ? '<span class="day">' + x.day + '</span>' : '') + x.h) + '</tr>' + resume +
@@ -518,7 +533,7 @@
       '<tr><th>Marée</th>' + tideCell + '</tr>' +
       '</table>';
     const box = document.getElementById('meteo'), now = box.querySelector('td.now');
-    if (now) box.scrollLeft = now.offsetLeft - now.parentNode.firstChild.offsetWidth;   // hors 6h-22h : pas de colonne « maintenant »
+    if (now) box.scrollLeft = now.offsetLeft - now.parentNode.firstChild.offsetWidth;   // de nuit : pas de colonne « maintenant »
   }
 
   // Prochaine pleine ou basse mer (« haute 17h05 ») à partir de maintenant ; absente du tableau de secours.
@@ -538,8 +553,8 @@
       '<blockquote class="quote" style="width:100%"><div class="quote-text"><i class="sk" style="width:50%;height:20px;margin:3px 0 9px"></i><i class="sk" style="width:100%;height:15px"></i></div></blockquote>' +
       '<div class="stats">' + '<i class="sk sk-stat"></i>'.repeat(5) + '</div>';
     document.getElementById('meteo').innerHTML = '<table class="loading" aria-busy="true">' +
-      ['Heure', 'Résumé', 'Houle (m)', 'Période (s)', 'Vent (km/h)', 'Météo', 'Marée'].map(l =>
-        '<tr><th>' + l + '</th>' + (l === 'Résumé' ? '<td colspan="' + HOURS + '"><i class="sk" style="width:60%;height:18px;margin:0 auto"></i></td>' : sk) + '</tr>').join('') + '</table>';
+      ['Heure', 'Report', 'Houle (m)', 'Période (s)', 'Vent (km/h)', 'Météo', 'Marée'].map(l =>
+        '<tr><th>' + l + '</th>' + (l === 'Report' ? '<td colspan="' + HOURS + '"><i class="sk" style="width:60%;height:18px;margin:0 auto"></i></td>' : sk) + '</tr>').join('') + '</table>';
   }
 
   function updateEyebrow() {
@@ -584,9 +599,9 @@
     const todayText = texts && texts.find(d => d.date === today);
     el.innerHTML = (todayText ? '<blockquote class="quote"><div class="quote-text">' + yaduHtml(todayText) + '</div></blockquote>' : '') +
       (items.length ? '<div class="stats">' + items.join('') + '</div>' : '');
-    // Le tableau n'affiche que les créneaux de 6h à 22h (les cartouches et la prochaine marée utilisent toutes les colonnes).
-    const daytime = cols && cols.filter(c => { const h = parseInt(c.h); return h >= 6 && h <= 22; });
-    if (daytime && daytime.length) renderTable(daytime, texts);
+    // Le tableau suit le soleil : le jour, plus une colonne de nuit à chaque bout (les cartouches et la prochaine marée utilisent toutes les colonnes).
+    const shown = cols && visibleSlots(cols);
+    if (shown && shown.length) renderTable(shown, texts);
     else document.getElementById('meteo').innerHTML = '';
     const fromGoSurf = !!gs, tempsFromOpenMeteo = !gsTemps && !!meteo;
     document.getElementById('source').textContent = !cols ? '' : 'Source : ' +
