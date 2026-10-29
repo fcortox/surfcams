@@ -198,8 +198,8 @@
   [data-skin="psy"] .chip:nth-child(5n+3) { background: #f2a6b8; } [data-skin="psy"] .chip:nth-child(5n+4) { background: #9cc8ea; }
   [data-skin="psy"] .chip:nth-child(5n) { background: #f7b27a; }
   [data-skin="psy"] .frame { border-bottom: 3px solid #1d3557; }
-  [data-skin="psy"] .meteo td.tide { background: linear-gradient(to top, transparent var(--p), #fdf3d6 var(--p)) content-box, linear-gradient(to top, #e2574c, #f6c453) content-box; }
-  [data-skin="psy"] .meteo td.tide.now { background: linear-gradient(to top, transparent var(--p), #f9c97a var(--p)) content-box, linear-gradient(to top, #e2574c, #f6c453) content-box, linear-gradient(#f9c97a, #f9c97a) border-box; }
+  [data-skin="psy"] .meteo td.tide { background: linear-gradient(to top, transparent var(--p), #fdf3d6 var(--p)) 2px 0 / calc(100% - 4px) 100% no-repeat border-box, linear-gradient(to top, #e2574c, #f6c453) 2px 0 / calc(100% - 4px) 100% no-repeat border-box; }
+  [data-skin="psy"] .meteo td.tide.now { background: linear-gradient(to top, transparent var(--p), #f9c97a var(--p)) 2px 0 / calc(100% - 4px) 100% no-repeat border-box, linear-gradient(to top, #e2574c, #f6c453) 2px 0 / calc(100% - 4px) 100% no-repeat border-box, linear-gradient(#f9c97a, #f9c97a) border-box; }
   /* Flèches : police système et aucun style italique hérité (Shrikhand/Modak sont penchées et déformaient le symbole) */
   .subtitle .arrow, .meteo .arrow { display: inline-block; margin-left: 4px; color: var(--arrow); font-weight: 400; font-style: normal; font-synthesis: none; font-family: system-ui, "Segoe UI Symbol", "Apple Symbols", sans-serif; }
 
@@ -229,8 +229,8 @@
   .meteo tr.hours td.now { background: var(--nowhead-bg); color: var(--nowhead-color); }
   .meteo tr.hours td.now .day { color: var(--nowhead-day); }
   .meteo td.wx { font-size: 1.05rem; line-height: 1; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
-  .meteo td.tide { position: relative; height: 60px; padding: 0 2px; background: linear-gradient(to top, var(--tide) var(--p), transparent var(--p)) content-box; font-size: .75rem; }
-  .meteo td.tide.now { background: linear-gradient(to top, var(--tide-now) var(--p), transparent var(--p)) content-box, linear-gradient(var(--tide-now-bg), var(--tide-now-bg)) border-box; }
+  .meteo td.tide { position: relative; height: 60px; padding: 0 2px; background: linear-gradient(to top, var(--tide) var(--p), transparent var(--p)) 2px 0 / calc(100% - 4px) 100% no-repeat border-box; font-size: .75rem; }
+  .meteo td.tide.now { background: linear-gradient(to top, var(--tide-now) var(--p), transparent var(--p)) 2px 0 / calc(100% - 4px) 100% no-repeat border-box, linear-gradient(var(--tide-now-bg), var(--tide-now-bg)) border-box; }
   .meteo td.tide span { position: relative; display: block; padding: 5px; line-height: 1.25; }
   .meteo td.tide .ti { font-family: system-ui, "Segoe UI Symbol", "Apple Symbols", sans-serif; font-style: normal; font-weight: 400; display: block; font-size: .7rem; color: var(--ti); }
 
