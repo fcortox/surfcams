@@ -151,6 +151,7 @@
     --body-bg: repeating-conic-gradient(from 0deg at 50% 38%, #e4f1f3 0deg 5deg, #edf6f7 5deg 10deg);
   }
 
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }   /* iOS agrandit sinon le texte des blocs très larges (ligne Report du tableau) */
   * { box-sizing: border-box; }
   body { font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; color: var(--text); background: var(--body-bg); background-attachment: fixed; -webkit-font-smoothing: antialiased; }
   .wrap { max-width: 1400px; margin: 0 auto; padding: 32px 24px 56px; }
